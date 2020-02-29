@@ -1,9 +1,14 @@
 import fs from 'fs-extra'
 import path from 'path'
+import _ from 'lodash'
 
-const inputSourceJSONPath = path.join(__dirname, '..', 'input', 'source.json')
+const inputPath = path.join(__dirname, '..', 'input')
+const inputSourceJSONPath = path.join(inputPath, 'source.json')
+const inputResourcesPath = (name) => path.join(inputPath, 'resources', name)
+
 const outputDirPath = path.join(__dirname, '..', 'output')
-const outputContentsJSONPath = (subpath) => path.join(outputDirPath, subpath, 'Contents.json')
+const outputResourcePath = (subpath, name) => path.join(outputDirPath, subpath, name)
+const outputContentsJSONPath = (subpath) => outputResourcePath(subpath, 'Contents.json')
 
 function saveToFile(path, content, msg) {
 	return fs.outputFile(path, content, err => {
@@ -20,6 +25,10 @@ function saveContentJSON(path, content, msg) {
 		JSON.stringify(content, null, 2),
 		msg
 	)
+}
+
+function copyResource(path, name) {
+	fs.copySync(inputResourcesPath(name), outputResourcePath(path, name));
 }
 
 function clearEmpties(o) {
@@ -48,6 +57,7 @@ function assetExtractor(parentName) {
 		} = asset
 		const images = []
 		const properties = {}
+		const resourcePath = `${parentName}/${name}.imageset`
 
 		if (type === 'single') {
 			images.push({
@@ -56,9 +66,10 @@ function assetExtractor(parentName) {
 				...attributes
 			})
 			properties["preserves-vector-representation"] = vector
+			copyResource(resourcePath, filename)
 		} else if (type === 'set') {
 			const [basename, ext] = filename.split('.', 2)
-			const filenames = ['', '_@2x', '_@3x'].map((el, idx) => ({
+			const filenames = ['', '@2x', '@3x'].map((el, idx) => ({
 				filename: `${basename}${el}.${ext}`,
 				scale: `${idx + 1}x`
 			}))
@@ -67,9 +78,8 @@ function assetExtractor(parentName) {
 					"idiom": "universal",
 					...el
 				})
+				copyResource(resourcePath, el.filename)
 			})
-			console.log(filenames);
-
 		}
 
 		const contentJSON = {
@@ -81,14 +91,23 @@ function assetExtractor(parentName) {
 			properties
 		}
 
-		const assetsName = `${parentName}/${name}.imageset`
-		saveContentJSON(assetsName, clearEmpties(contentJSON), 'asset json')
+		saveContentJSON(resourcePath, clearEmpties(contentJSON), 'asset json')
+
+		return (namespace) => {
+			const prefix = !!namespace ? `${namespace}/` : ''
+			const imageName = `${prefix}${name}`
+			return `\
+		static func ${_.camelCase(name)}() -> UIImage? {
+			return UIImage(named: "${imageName}")
+		}
+		`}
 	}
 }
 
 function groupExtractor(parentName) {
 	return (group) => {
-		const { namespace = true, name, assets = [] } = group
+		const { namespace = true, name: _name, assets = [] } = group
+		const name = _.capitalize(_name)
 		const contentJSON = {
 			"info": {
 				"version": 1,
@@ -100,13 +119,20 @@ function groupExtractor(parentName) {
 		}
 		const assetsName = `${parentName}/${name}`
 		saveContentJSON(assetsName, contentJSON, 'group json')
-		assets.forEach(assetExtractor(assetsName))
+		const swiftCodeBuilders = assets.map(assetExtractor(assetsName))
+		const swiftCodes = swiftCodeBuilders.map(el => el(name)).join('\n')
+		return `\
+	enum ${name} {
+		${swiftCodes}
+	}
+		`
 	}
 }
 
 function extractAssetFromSource(source) {
-	const { name, groups = [], assets = [] } = source
-	const assetsName = `${name}.xcassets`
+	const { name: _name, groups = [], assets = [] } = source
+	const name = _.capitalize(_name)
+	const assetsName = `${name}Images.xcassets`
 	const contentJSON = {
 		"info": {
 			"version": 1,
@@ -115,8 +141,18 @@ function extractAssetFromSource(source) {
 	}
 	fs.emptyDirSync(outputDirPath)
 	saveContentJSON(assetsName, contentJSON, 'assets json')
-	groups.forEach(groupExtractor(assetsName))
-	assets.forEach(assetExtractor(assetsName))
+	const groupsSwiftCodes = groups.map(groupExtractor(assetsName))
+	const assetsSwiftCodeBuilders = assets.map(assetExtractor(assetsName))
+	const assetsSwiftCodes = assetsSwiftCodeBuilders.map(el => el()).join('\n')
+	const swiftCode = `\
+import UIKit
+
+enum ${name}Images {
+		${groupsSwiftCodes}
+		${assetsSwiftCodes}
+	}
+		`
+	saveToFile(outputResourcePath('', `${name}Images.generated.swift`), swiftCode, 'swift file')
 }
 
 function extractFromSourceJSON() {
