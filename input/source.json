@@ -1,0 +1,30 @@
+[
+	{
+		"name": "Common",
+		"groups": [
+			{
+				"namespace": true,
+				"name": "Chevron",
+				"assets": [
+					{
+						"type": "single",
+						"vector": true,
+						"name": "Right",
+						"filename": "ChevronRight.pdf",
+						"attributes": {
+							"language-direction": "left-to-right"
+						}
+					}
+				]
+			}
+		],
+		"assets": [
+			{
+				"type": "set",
+				"vector": false,
+				"name": "Close",
+				"filename": "ic_close_white.png"
+			}
+		]
+	}
+]
