@@ -122,10 +122,9 @@ function groupExtractor(parentName) {
 		const swiftCodeBuilders = assets.map(assetExtractor(assetsName))
 		const swiftCodes = swiftCodeBuilders.map(el => el(name)).join('\n')
 		return `\
-	enum ${name} {
+	public enum ${name} {
 		${swiftCodes}
-	}
-		`
+	}`
 	}
 }
 
@@ -147,11 +146,11 @@ function extractAssetFromSource(source) {
 	const swiftCode = `\
 import UIKit
 
-enum ${name}Images {
-		${groupsSwiftCodes}
-		${assetsSwiftCodes}
-	}
-		`
+public enum ${name}Images {
+${groupsSwiftCodes}
+${assetsSwiftCodes}
+}
+`
 	saveToFile(outputResourcePath('', `${name}Images.generated.swift`), swiftCode, 'swift file')
 }
 
