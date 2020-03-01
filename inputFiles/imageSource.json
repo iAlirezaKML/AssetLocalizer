@@ -3,12 +3,9 @@
 		"name": "Common",
 		"groups": [
 			{
-				"namespace": true,
 				"name": "Chevron",
 				"assets": [
 					{
-						"type": "single",
-						"vector": true,
 						"name": "Right",
 						"filename": "ChevronRight.pdf",
 						"attributes": {

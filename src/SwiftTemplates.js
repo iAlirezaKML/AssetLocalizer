@@ -6,6 +6,10 @@ export function importFoundation() {
 	return `import Foundation`
 }
 
+export function importZSWTaggedStringSwift() {
+	return `import ZSWTaggedStringSwift`
+}
+
 export function enumSyntax(name, content) {
 	return `\
 public enum ${name} {
@@ -32,7 +36,7 @@ public static func ${name}(${args}) -> String {
 }`
 }
 
-export function attributedStringFunc(name, args, key, comment) {
+export function attributedStringFunc(name, args, key, comment, vars) {
 	return `\
 public static func ${name}(${args}) -> NSAttributedString? {
 	return try? ZSWTaggedString(
@@ -46,7 +50,7 @@ public static func ${name}(${args}) -> NSAttributedString? {
 
 export function arrayStringFunc(name, key, comment) {
 	return `\
-static func ${name}() -> [String] {
+public static func ${name}() -> [String] {
 	return parseItems(
 		NSLocalizedString(
 			"${key}",
@@ -60,6 +64,6 @@ export function fileName(name) {
 	return `${name}.generated.swift`
 }
 
-export function comment(comment) {
-	return `/// ${comment}`
+export function swiftComment(comment) {
+	return !!comment ? `/// ${comment}` : ''
 }

@@ -172,7 +172,7 @@ export default class ImageGenerator {
 
 			// generate swift code
 			saveToFile(
-				path.join(outputPath, fileName(name)),
+				path.join(outputPath, fileName(`${name}Images`)),
 				el.swiftCode
 			)
 		})

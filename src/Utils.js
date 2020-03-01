@@ -60,3 +60,7 @@ export function clearEmpties(o) {
 	}
 	return o
 }
+
+export function escapeQuotes(string) {
+	return string.replace(/[\""]/g, '\\"') // escape "
+}
