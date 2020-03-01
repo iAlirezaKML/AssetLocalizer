@@ -62,10 +62,9 @@ class ImageAsset {
 		})
 	}
 
-	swiftCode(namespace) {
+	swiftCode(namespace = '') {
 		const { name } = this
-		const prefix = !!namespace ? `${namespace}/` : ''
-		const imageName = `${prefix}${name}`
+		const imageName = path.join(namespace, name)
 		return uiImageFunc(name.camelCase(), imageName)
 	}
 }
@@ -93,7 +92,7 @@ class ImageAssetGroup {
 class ImageAssets {
 	constructor(source) {
 		const { name: _name, groups: _groups = [], assets: _assets = [] } = source
-		const name = _name.capitalize()
+		const name = `${_name.capitalize()}Images`
 		const groups = _groups.map(el => new ImageAssetGroup(el))
 		const assets = _assets.map(el => new ImageAsset(el))
 
@@ -108,7 +107,7 @@ class ImageAssets {
 	get swiftCode() {
 		const { name, groups, assets } = this
 		const groupsSwiftCodes = groups.map(el => el.swiftCode).join('\n')
-		const assetsSwiftCodes = assets.map(el => el.swiftCode(name)).join('\n')
+		const assetsSwiftCodes = assets.map(el => el.swiftCode()).join('\n')
 		const codes = `${groupsSwiftCodes}\n${assetsSwiftCodes}`
 		return `${importUIKit()}\n\n${enumSyntax(name, codes)}`
 	}
@@ -172,7 +171,7 @@ export default class ImageGenerator {
 
 			// generate swift code
 			saveToFile(
-				path.join(outputPath, fileName(`${name}Images`)),
+				path.join(outputPath, fileName(name)),
 				el.swiftCode
 			)
 		})

@@ -31,7 +31,7 @@ export function assetsRootContentsJSON() {
 }
 
 export function assetsFileName(name) {
-	return `${name}Images.xcassets`
+	return `${name}.xcassets`
 }
 
 export function contentsJSONFileName() {

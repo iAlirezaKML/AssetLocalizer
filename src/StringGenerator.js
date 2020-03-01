@@ -96,7 +96,7 @@ export default class StringGenerator {
 
 		// generate .strings files
 		langs.forEach(lang => {
-			const localizedStrings = strings.map(el => el.localizable(lang)).join()
+			const localizedStrings = strings.map(el => el.localizable(lang)).join('')
 			saveToFile(path.join(outputPath, stringsFileName(lang)), localizedStrings)
 		})
 
