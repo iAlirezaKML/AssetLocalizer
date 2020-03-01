@@ -59,3 +59,7 @@ static func ${name}() -> [String] {
 export function fileName(name) {
 	return `${name}.generated.swift`
 }
+
+export function comment(comment) {
+	return `/// ${comment}`
+}

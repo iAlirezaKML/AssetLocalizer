@@ -10,7 +10,7 @@ const outputPath = 'outputFiles'
 String.prototype.capitalize = function () { return _.capitalize(this) }
 String.prototype.camelCase = function () { return _.camelCase(this) }
 
-readJSONFile(path.join(inputPath, 'source.json'))
+readJSONFile(path.join(inputPath, 'imageSource.json'))
 	.then(source => {
 		const imageGenerator = new ImageGenerator(source, inputPath, outputPath)
 		removeFiles(outputPath)
